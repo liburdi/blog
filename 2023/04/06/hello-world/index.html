@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>杂文-解决线上故障不可忽略的利器 | liburdi&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="背景平时工作中遇到线上故障时，往往需要对时间段内的日志进行清洗，得到特定字段值。最后执行修复脚本，从而进行线上故障修复，所以分享几个高效的vim命令，能让此过程更平滑。 进入底线命令模式按:，进入底线命令模式 替换命令12345:%s&#x2F;a&#x2F;b&#x2F;g &#x2F;&#x2F;将整个文件的的所有a替换成b:%s&#x2F;a&#x2F;b&#x2F; &#x2F;&#x2F;将每行的第一个a替换成b:%!grep a &#x2F;&#x2F;只留下含有a的行:%!grep -v a &#x2F;&#x2F;只去">
+<meta property="og:type" content="article">
+<meta property="og:title" content="杂文-解决线上故障不可忽略的利器">
+<meta property="og:url" content="http://liburdi.xyz/2023/04/06/hello-world/index.html">
+<meta property="og:site_name" content="liburdi&#39;s blog">
+<meta property="og:description" content="背景平时工作中遇到线上故障时，往往需要对时间段内的日志进行清洗，得到特定字段值。最后执行修复脚本，从而进行线上故障修复，所以分享几个高效的vim命令，能让此过程更平滑。 进入底线命令模式按:，进入底线命令模式 替换命令12345:%s&#x2F;a&#x2F;b&#x2F;g &#x2F;&#x2F;将整个文件的的所有a替换成b:%s&#x2F;a&#x2F;b&#x2F; &#x2F;&#x2F;将每行的第一个a替换成b:%!grep a &#x2F;&#x2F;只留下含有a的行:%!grep -v a &#x2F;&#x2F;只去">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-04-06T12:05:00.000Z">
+<meta property="article:modified_time" content="2023-04-07T06:38:56.926Z">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="liburdi's blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">liburdi&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS 订阅"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liburdi.xyz"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/04/06/hello-world/" class="article-date">
+  <time class="dt-published" datetime="2023-04-06T12:05:00.000Z" itemprop="datePublished">2023-04-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      杂文-解决线上故障不可忽略的利器
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>平时工作中遇到线上故障时，往往需要对时间段内的日志进行清洗，得到特定字段值。最后执行修复脚本，从而进行线上故障修复，所以分享几个高效的vim命令，能让此过程更平滑。</p>
+<h4 id="进入底线命令模式"><a href="#进入底线命令模式" class="headerlink" title="进入底线命令模式"></a>进入底线命令模式</h4><p>按:，进入底线命令模式</p>
+<h4 id="替换命令"><a href="#替换命令" class="headerlink" title="替换命令"></a>替换命令</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">:%s/a/b/g //将整个文件的的所有a替换成b</span><br><span class="line">:%s/a/b/ //将每行的第一个a替换成b</span><br><span class="line">:%!grep a //只留下含有a的行</span><br><span class="line">:%!grep -v a //只去掉含有a的行</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h4><p><code>\d</code> 数字</p>
+<p><code>\D</code> 排除数子</p>
+<p><code>\&#123;n&#125;</code> 出现n次</p>
+<p><code>\&#123;n,m&#125;</code> 出现n-m次</p>
+<h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><ul>
+<li>日志</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">xxxxcredit_flow_1234xxxxx</span><br><span class="line">xxxxcredit_flow_2134xxxxx</span><br><span class="line">xxxxcredit_flow_3124xxxxx</span><br></pre></td></tr></table></figure>
+<ul>
+<li>目的</li>
+</ul>
+<p>只留含有credit_flow_的行</p>
+<p>替换关键字credit_flow_后的数字</p>
+<ul>
+<li>命令<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#只留下含有关键字的行</span><br><span class="line">%!grep credit_flow_</span><br><span class="line">#将整个文件的的所有符合规则的字符替换成目标字符</span><br><span class="line">%s/credit_flow_\d\&#123;4&#125;/credit_flow_0000/g</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liburdi.xyz/2023/04/06/hello-world/" data-id="clg52xke000005wo3dp650nii" data-title="杂文-解决线上故障不可忽略的利器" class="article-share-link">分享</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/04/06/hello-world/">杂文-解决线上故障不可忽略的利器</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 liburdi&#39;s blog<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
