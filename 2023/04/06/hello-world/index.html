@@ -14,10 +14,11 @@
 <meta property="og:description" content="背景平时工作中遇到线上故障时，往往需要对时间段内的日志进行清洗，得到特定字段值。最后执行修复脚本，从而进行线上故障修复，所以分享几个高效的vim命令，能让此过程更平滑。 进入底线命令模式按:，进入底线命令模式 替换命令12345:%s&#x2F;a&#x2F;b&#x2F;g &#x2F;&#x2F;将整个文件的的所有a替换成b:%s&#x2F;a&#x2F;b&#x2F; &#x2F;&#x2F;将每行的第一个a替换成b:%!grep a &#x2F;&#x2F;只留下含有a的行:%!grep -v a &#x2F;&#x2F;只去">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-04-06T12:05:00.000Z">
-<meta property="article:modified_time" content="2023-04-07T06:38:56.926Z">
+<meta property="article:modified_time" content="2023-04-07T09:36:31.043Z">
+<meta property="article:tag" content="效率">
 <meta name="twitter:card" content="summary">
   
-    <link rel="alternate" href="/atom.xml" title="liburdi's blog" type="application/atom+xml">
+    <link rel="alternate" href="http://github.com/liburdi" title="liburdi's blog" >
   
   
     <link rel="shortcut icon" href="/favicon.png">
@@ -62,7 +63,7 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS 订阅"></a>
+          <a id="nav-rss-link" class="nav-icon" target="_blank" rel="noopener" href="http://github.com/liburdi" title="RSS 订阅"></a>
         
         <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
       </nav>
@@ -80,6 +81,10 @@
   <time class="dt-published" datetime="2023-04-06T12:05:00.000Z" itemprop="datePublished">2023-04-06</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/linux/">linux</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -116,6 +121,15 @@
 <li>命令<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#只留下含有关键字的行</span><br><span class="line">%!grep credit_flow_</span><br><span class="line">#将整个文件的的所有符合规则的字符替换成目标字符</span><br><span class="line">%s/credit_flow_\d\&#123;4&#125;/credit_flow_0000/g</span><br></pre></td></tr></table></figure></li>
 </ul>
 
+<div id="gitalk-container"></div>
+<script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js"></script><link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"><script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+		<script>
+		var gitalkConfig = {"clientID":"8a830c77ea91f11025e3","clientSecret":"4ef3d4421a644c8a5c7e878d1d9b4a6c62d7a937","repo":"blog","owner":"liburdi","admin":["liburdi"],"distractionFreeMode":false};
+	    gitalkConfig.id = md5(location.pathname);
+		var gitalk = new Gitalk(gitalkConfig);
+	    gitalk.render("gitalk-container");
+	    </script>
       
     </div>
     <footer class="article-footer">
@@ -123,6 +137,8 @@
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a></li></ul>
+
     </footer>
   </div>
   
@@ -136,12 +152,24 @@
           <aside id="sidebar">
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a></li></ul>
+    </div>
+  </div>
 
-  
-    
+
   
     
   <div class="widget-wrap">
