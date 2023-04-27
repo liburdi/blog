@@ -96,7 +96,8 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在某些场景，通过协程来进行并发处理，但不希望其出现panic时导致程序崩溃或者出现其他异常情况。</p>
+        <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在 Go 语言中，协程（Goroutine）是一种轻量级线程，可以实现并发执行。但是，在编写协程代码时，可能会遇到 panic 错误，并影响应用程序的性能和稳定性。那么，该如何处理协程 panic 呢？</p>
+<p>首先，需要了解协程 panic 的原因。通常，当一个协程出现错误并无法恢复时，会引发 panic。这会导致程序崩溃或运行速度变慢。为了处理协程 panic，我们可以使用以下几种方法：</p>
 <h4 id="措施"><a href="#措施" class="headerlink" title="措施"></a>措施</h4><ol>
 <li><p>使用defer函数：在协程中使用defer函数可以保证在函数退出之前执行一些清理操作，比如释放资源等。这可以减轻panic对程序的影响，同时也有助于排查问题。</p>
 </li>
