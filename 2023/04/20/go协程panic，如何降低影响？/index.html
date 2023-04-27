@@ -14,7 +14,7 @@
 <meta property="og:description" content="背景在 Go 语言中，协程（Goroutine）是一种轻量级线程，可以实现并发执行。但是，在编写协程代码时，可能会遇到 panic 错误，并影响应用程序的性能和稳定性。那么，该如何处理协程 panic 呢？ 首先，需要了解协程 panic 的原因。通常，当一个协程出现错误并无法恢复时，会引发 panic。这会导致程序崩溃或运行速度变慢。为了处理协程 panic，我们可以使用以下几种方法： 措施 使">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-04-20T02:41:00.000Z">
-<meta property="article:modified_time" content="2023-04-27T07:30:57.582Z">
+<meta property="article:modified_time" content="2023-04-27T10:13:16.789Z">
 <meta property="article:tag" content="goroutine">
 <meta name="twitter:card" content="summary">
   
@@ -102,9 +102,9 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在 Go 语言中，协程（Goroutine）是一种轻量级线程，可以实现并发执行。但是，在编写协程代码时，可能会遇到 panic 错误，并影响应用程序的性能和稳定性。那么，该如何处理协程 panic 呢？</p>
+        <h5 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h5><p>在 Go 语言中，协程（Goroutine）是一种轻量级线程，可以实现并发执行。但是，在编写协程代码时，可能会遇到 panic 错误，并影响应用程序的性能和稳定性。那么，该如何处理协程 panic 呢？</p>
 <p>首先，需要了解协程 panic 的原因。通常，当一个协程出现错误并无法恢复时，会引发 panic。这会导致程序崩溃或运行速度变慢。为了处理协程 panic，我们可以使用以下几种方法：</p>
-<h4 id="措施"><a href="#措施" class="headerlink" title="措施"></a>措施</h4><ol>
+<h5 id="措施"><a href="#措施" class="headerlink" title="措施"></a>措施</h5><ol>
 <li><p>使用defer函数：在协程中使用defer函数可以保证在函数退出之前执行一些清理操作，比如释放资源等。这可以减轻panic对程序的影响，同时也有助于排查问题。</p>
 </li>
 <li><p>使用recover函数：recover函数可以捕获panic并返回它的值，这样就可以在程序中进行处理。在协程中使用recover可以避免panic将程序终止，而是通过错误处理机制来进行处理。</p>
@@ -115,7 +115,7 @@
 </li>
 </ol>
 <p>总之，处理协程panic的关键是及时发现它，并采取措施来降低影响。</p>
-<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><p>以下是一个示例代码，演示如何在协程中使用defer和recover来处理panic，以及如何使用sync.WaitGroup来限制协程数量：</p>
+<h5 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h5><p>以下是一个示例代码，演示如何在协程中使用defer和recover来处理panic，以及如何使用sync.WaitGroup来限制协程数量：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;sync&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</span><br><span class="line">        wg.Add(<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(id <span class="type">int</span>)</span></span> &#123;</span><br><span class="line">            <span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">                <span class="keyword">if</span> r := <span class="built_in">recover</span>(); r != <span class="literal">nil</span> &#123;</span><br><span class="line">                    fmt.Printf(<span class="string">&quot;goroutine %d panic: %v\n&quot;</span>, id, r)</span><br><span class="line">                &#125;</span><br><span class="line">                wg.Done()</span><br><span class="line">            &#125;()</span><br><span class="line">            <span class="comment">// do something</span></span><br><span class="line">            <span class="keyword">if</span> id == <span class="number">5</span> &#123;</span><br><span class="line">                <span class="built_in">panic</span>(<span class="string">&quot;oh no!&quot;</span>)</span><br><span class="line">            &#125;</span><br><span class="line">            fmt.Printf(<span class="string">&quot;goroutine %d completed\n&quot;</span>, id)</span><br><span class="line">        &#125;(i)</span><br><span class="line">    &#125;</span><br><span class="line">    wg.Wait()</span><br><span class="line">    fmt.Println(<span class="string">&quot;all goroutines completed&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>在这个示例代码中，我们启动了10个协程，并在其中一个协程中使用了panic。在每个协程中，我们使用defer函数来捕获panic并进行处理。我们还使用了sync.WaitGroup来限制协程数量，并在所有协程完成后输出一条消息。</p>

@@ -14,7 +14,7 @@
 <meta property="og:description" content="在 Web 开发中，Nginx（”engine x”）是一个广泛使用的高性能 Web 服务器和反向代理服务器。它可以用于负载均衡、缓存静态资源、HTTPS 配置等，本文将介绍如何配置 Nginx 反向代理。 安装 Nginx首先，我们需要安装 Nginx。具体步骤因操作系统而异，可参考 Nginx 官方文档中的指南。 编写 Nginx 配置文件接下来，我们需要编写一个反向代理配置文件。通常，这个文">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-04-27T08:22:00.000Z">
-<meta property="article:modified_time" content="2023-04-27T09:58:41.518Z">
+<meta property="article:modified_time" content="2023-04-27T10:12:38.668Z">
 <meta property="article:tag" content="nginx">
 <meta name="twitter:card" content="summary">
   
@@ -103,12 +103,12 @@
     <div class="e-content article-entry" itemprop="articleBody">
       
         <p>在 Web 开发中，Nginx（”engine x”）是一个广泛使用的高性能 Web 服务器和反向代理服务器。它可以用于负载均衡、缓存静态资源、HTTPS 配置等，本文将介绍如何配置 Nginx 反向代理。</p>
-<h6 id="安装-Nginx"><a href="#安装-Nginx" class="headerlink" title="安装 Nginx"></a>安装 Nginx</h6><p>首先，我们需要安装 Nginx。具体步骤因操作系统而异，可参考 Nginx 官方文档中的指南。</p>
-<h6 id="编写-Nginx-配置文件"><a href="#编写-Nginx-配置文件" class="headerlink" title="编写 Nginx 配置文件"></a>编写 Nginx 配置文件</h6><p>接下来，我们需要编写一个反向代理配置文件。通常，这个文件位于 &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F; 目录下，并以 .conf 扩展名结尾。以下是一个简单的示例配置文件：</p>
+<h5 id="安装-Nginx"><a href="#安装-Nginx" class="headerlink" title="安装 Nginx"></a>安装 Nginx</h5><p>首先，我们需要安装 Nginx。具体步骤因操作系统而异，可参考 Nginx 官方文档中的指南。</p>
+<h5 id="编写-Nginx-配置文件"><a href="#编写-Nginx-配置文件" class="headerlink" title="编写 Nginx 配置文件"></a>编写 Nginx 配置文件</h5><p>接下来，我们需要编写一个反向代理配置文件。通常，这个文件位于 &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F; 目录下，并以 .conf 扩展名结尾。以下是一个简单的示例配置文件：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name example.com;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_pass http://localhost:3000;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">        proxy_set_header Host $host;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>上述示例配置文件中，listen 80 设置了监听的端口为 80，server_name 指定了要代理的域名或 IP 地址。</p>
 <p>location &#x2F; 表示匹配所有请求，proxy_pass <a target="_blank" rel="noopener" href="http://localhost:3000/">http://localhost:3000</a> 则将请求转发到本地端口为 3000 的服务器。proxy_set_header 设置了请求头信息，包括客户端的真实 IP 地址和转发的域名等。</p>
-<h6 id="测试-Nginx-反向代理"><a href="#测试-Nginx-反向代理" class="headerlink" title="测试 Nginx 反向代理"></a>测试 Nginx 反向代理</h6><p>配置完成后，我们可以使用以下命令重启 Nginx 并测试反向代理是否有效：</p>
+<h5 id="测试-Nginx-反向代理"><a href="#测试-Nginx-反向代理" class="headerlink" title="测试 Nginx 反向代理"></a>测试 Nginx 反向代理</h5><p>配置完成后，我们可以使用以下命令重启 Nginx 并测试反向代理是否有效：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl restart nginx</span><br><span class="line">curl -I example.com</span><br></pre></td></tr></table></figure>
 <p>其中，curl -I 命令用于检查 HTTP 响应头，example.com 替换为您要代理的域名或 IP 地址。</p>
 <p>如果一切正常，则会看到来自反向代理服务器的响应头信息。如果出现错误，请检查您的配置文件中是否存在语法错误，并确认本地服务器是否正在运行。</p>

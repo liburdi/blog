@@ -100,12 +100,12 @@
     <div class="e-content article-entry" itemprop="articleBody">
       
         <p>在 Web 开发中，Nginx（”engine x”）是一个广泛使用的高性能 Web 服务器和反向代理服务器。它可以用于负载均衡、缓存静态资源、HTTPS 配置等，本文将介绍如何配置 Nginx 反向代理。</p>
-<h6 id="安装-Nginx"><a href="#安装-Nginx" class="headerlink" title="安装 Nginx"></a>安装 Nginx</h6><p>首先，我们需要安装 Nginx。具体步骤因操作系统而异，可参考 Nginx 官方文档中的指南。</p>
-<h6 id="编写-Nginx-配置文件"><a href="#编写-Nginx-配置文件" class="headerlink" title="编写 Nginx 配置文件"></a>编写 Nginx 配置文件</h6><p>接下来，我们需要编写一个反向代理配置文件。通常，这个文件位于 &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F; 目录下，并以 .conf 扩展名结尾。以下是一个简单的示例配置文件：</p>
+<h5 id="安装-Nginx"><a href="#安装-Nginx" class="headerlink" title="安装 Nginx"></a>安装 Nginx</h5><p>首先，我们需要安装 Nginx。具体步骤因操作系统而异，可参考 Nginx 官方文档中的指南。</p>
+<h5 id="编写-Nginx-配置文件"><a href="#编写-Nginx-配置文件" class="headerlink" title="编写 Nginx 配置文件"></a>编写 Nginx 配置文件</h5><p>接下来，我们需要编写一个反向代理配置文件。通常，这个文件位于 &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F; 目录下，并以 .conf 扩展名结尾。以下是一个简单的示例配置文件：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name example.com;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_pass http://localhost:3000;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">        proxy_set_header Host $host;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>上述示例配置文件中，listen 80 设置了监听的端口为 80，server_name 指定了要代理的域名或 IP 地址。</p>
 <p>location &#x2F; 表示匹配所有请求，proxy_pass <a target="_blank" rel="noopener" href="http://localhost:3000/">http://localhost:3000</a> 则将请求转发到本地端口为 3000 的服务器。proxy_set_header 设置了请求头信息，包括客户端的真实 IP 地址和转发的域名等。</p>
-<h6 id="测试-Nginx-反向代理"><a href="#测试-Nginx-反向代理" class="headerlink" title="测试 Nginx 反向代理"></a>测试 Nginx 反向代理</h6><p>配置完成后，我们可以使用以下命令重启 Nginx 并测试反向代理是否有效：</p>
+<h5 id="测试-Nginx-反向代理"><a href="#测试-Nginx-反向代理" class="headerlink" title="测试 Nginx 反向代理"></a>测试 Nginx 反向代理</h5><p>配置完成后，我们可以使用以下命令重启 Nginx 并测试反向代理是否有效：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl restart nginx</span><br><span class="line">curl -I example.com</span><br></pre></td></tr></table></figure>
 <p>其中，curl -I 命令用于检查 HTTP 响应头，example.com 替换为您要代理的域名或 IP 地址。</p>
 <p>如果一切正常，则会看到来自反向代理服务器的响应头信息。如果出现错误，请检查您的配置文件中是否存在语法错误，并确认本地服务器是否正在运行。</p>
@@ -163,9 +163,9 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在 Go 语言中，协程（Goroutine）是一种轻量级线程，可以实现并发执行。但是，在编写协程代码时，可能会遇到 panic 错误，并影响应用程序的性能和稳定性。那么，该如何处理协程 panic 呢？</p>
+        <h5 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h5><p>在 Go 语言中，协程（Goroutine）是一种轻量级线程，可以实现并发执行。但是，在编写协程代码时，可能会遇到 panic 错误，并影响应用程序的性能和稳定性。那么，该如何处理协程 panic 呢？</p>
 <p>首先，需要了解协程 panic 的原因。通常，当一个协程出现错误并无法恢复时，会引发 panic。这会导致程序崩溃或运行速度变慢。为了处理协程 panic，我们可以使用以下几种方法：</p>
-<h4 id="措施"><a href="#措施" class="headerlink" title="措施"></a>措施</h4><ol>
+<h5 id="措施"><a href="#措施" class="headerlink" title="措施"></a>措施</h5><ol>
 <li><p>使用defer函数：在协程中使用defer函数可以保证在函数退出之前执行一些清理操作，比如释放资源等。这可以减轻panic对程序的影响，同时也有助于排查问题。</p>
 </li>
 <li><p>使用recover函数：recover函数可以捕获panic并返回它的值，这样就可以在程序中进行处理。在协程中使用recover可以避免panic将程序终止，而是通过错误处理机制来进行处理。</p>
@@ -176,7 +176,7 @@
 </li>
 </ol>
 <p>总之，处理协程panic的关键是及时发现它，并采取措施来降低影响。</p>
-<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><p>以下是一个示例代码，演示如何在协程中使用defer和recover来处理panic，以及如何使用sync.WaitGroup来限制协程数量：</p>
+<h5 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h5><p>以下是一个示例代码，演示如何在协程中使用defer和recover来处理panic，以及如何使用sync.WaitGroup来限制协程数量：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;sync&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</span><br><span class="line">        wg.Add(<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(id <span class="type">int</span>)</span></span> &#123;</span><br><span class="line">            <span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">                <span class="keyword">if</span> r := <span class="built_in">recover</span>(); r != <span class="literal">nil</span> &#123;</span><br><span class="line">                    fmt.Printf(<span class="string">&quot;goroutine %d panic: %v\n&quot;</span>, id, r)</span><br><span class="line">                &#125;</span><br><span class="line">                wg.Done()</span><br><span class="line">            &#125;()</span><br><span class="line">            <span class="comment">// do something</span></span><br><span class="line">            <span class="keyword">if</span> id == <span class="number">5</span> &#123;</span><br><span class="line">                <span class="built_in">panic</span>(<span class="string">&quot;oh no!&quot;</span>)</span><br><span class="line">            &#125;</span><br><span class="line">            fmt.Printf(<span class="string">&quot;goroutine %d completed\n&quot;</span>, id)</span><br><span class="line">        &#125;(i)</span><br><span class="line">    &#125;</span><br><span class="line">    wg.Wait()</span><br><span class="line">    fmt.Println(<span class="string">&quot;all goroutines completed&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>在这个示例代码中，我们启动了10个协程，并在其中一个协程中使用了panic。在每个协程中，我们使用defer函数来捕获panic并进行处理。我们还使用了sync.WaitGroup来限制协程数量，并在所有协程完成后输出一条消息。</p>
@@ -233,14 +233,14 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>平时工作中遇到线上故障时，往往需要对时间段内的日志进行清洗，得到特定字段值。最后执行修复脚本，从而进行线上故障修复，所以分享几个高效的vim命令，能让此过程更平滑。</p>
-<h4 id="进入底线命令模式"><a href="#进入底线命令模式" class="headerlink" title="进入底线命令模式"></a>进入底线命令模式</h4><p>按:，进入底线命令模式</p>
-<h4 id="替换命令"><a href="#替换命令" class="headerlink" title="替换命令"></a>替换命令</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">:%s/a/b/g //将整个文件的的所有a替换成b</span><br><span class="line">:%s/a/b/ //将每行的第一个a替换成b</span><br><span class="line">:%!grep a //只留下含有a的行</span><br><span class="line">:%!grep -v a //只去掉含有a的行</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h4 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h4><p><code>\d</code> 数字</p>
+        <h5 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h5><p>平时工作中遇到线上故障时，往往需要对时间段内的日志进行清洗，得到特定字段值。最后执行修复脚本，从而进行线上故障修复，所以分享几个高效的vim命令，能让此过程更平滑。</p>
+<h5 id="进入底线命令模式"><a href="#进入底线命令模式" class="headerlink" title="进入底线命令模式"></a>进入底线命令模式</h5><p>按:，进入底线命令模式</p>
+<h5 id="替换命令"><a href="#替换命令" class="headerlink" title="替换命令"></a>替换命令</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">:%s/a/b/g //将整个文件的的所有a替换成b</span><br><span class="line">:%s/a/b/ //将每行的第一个a替换成b</span><br><span class="line">:%!grep a //只留下含有a的行</span><br><span class="line">:%!grep -v a //只去掉含有a的行</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h5 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h5><p><code>\d</code> 数字</p>
 <p><code>\D</code> 排除数子</p>
 <p><code>\&#123;n&#125;</code> 出现n次</p>
 <p><code>\&#123;n,m&#125;</code> 出现n-m次</p>
-<h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><ul>
+<h5 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h5><ul>
 <li>日志</li>
 </ul>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">xxxxcredit_flow_1234xxxxx</span><br><span class="line">xxxxcredit_flow_2134xxxxx</span><br><span class="line">xxxxcredit_flow_3124xxxxx</span><br></pre></td></tr></table></figure>
