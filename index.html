@@ -75,6 +75,80 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-为什么Redis主从模式能保持数据一致" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/07/21/%E4%B8%BA%E4%BB%80%E4%B9%88Redis%E4%B8%BB%E4%BB%8E%E6%A8%A1%E5%BC%8F%E8%83%BD%E4%BF%9D%E6%8C%81%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4/" class="article-date">
+  <time class="dt-published" datetime="2023-07-20T16:37:00.000Z" itemprop="datePublished">2023-07-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/07/21/%E4%B8%BA%E4%BB%80%E4%B9%88Redis%E4%B8%BB%E4%BB%8E%E6%A8%A1%E5%BC%8F%E8%83%BD%E4%BF%9D%E6%8C%81%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4/">为什么Redis主从模式能保持数据一致?</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>为什么Redis主从模式能保持数据一致。想要知道答案，我们得深入分析Redis实例之间如何进行数据同步。</p>
+<h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>在具体分析今天的问题之前，我们需要了解 <code>Redis</code> 具有高可靠性，又是什么意思呢？其实，这里有两层含义：一是数据尽量少丢失，二是服务尽量少中断。<code>AOF</code> 和 <code>RDB</code> 保证了前者，而对于后者，<code>Redis</code> 的做法就是增加副本冗余量，将一份数据同时保存在多个实例上。即使有一个实例出现了故障，需要过一段时间才能恢复，其他实例也可以对外提供服务，不会影响业务使用。多实例保存同一份数据，听起来好像很不错，但是，我们必须要考虑一个问题：<strong>这么多副本，它们之间的数据如何保持一致呢？数据读写操作可以发给所有的实例吗</strong>？实际上，<code>Redis</code> 提供了主从库模式，以保证数据副本的一致，主从库之间采用的是读写分离的方式。</p>
+<p><strong>1）读操作：主库、从库都可以接收；</strong></p>
+<p><strong>2）写操作：首先到主库执行，然后，主库将写操作同步给从库。</strong></p>
+<p>到了这里我们发现几个问题：</p>
+<p><strong>1）主从库为什么要采用读写分离的方式；</strong></p>
+<p><strong>2）主库如何把数据同步给从库；</strong></p>
+<p><strong>3）主从库之前网络断了怎么办；</strong></p>
+<p>不过既然Redis具有高可用性，说明这些问题都已经有了答案。</p>
+<h4 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h4><h6 id="主从库为什么要采用读写分离的方式"><a href="#主从库为什么要采用读写分离的方式" class="headerlink" title="主从库为什么要采用读写分离的方式"></a>主从库为什么要采用读写分离的方式</h6><p>你可以设想一下，如果不管是主库还是从库，都能接收客户端的写操作，那么，一个直接的问题就是：如果客户端对同一个数据（例如 k1）前后修改了三次，每一次的修改请求都发送到不同的实例上，在不同的实例上执行，那么，这个数据在这三个实例上的副本就不一致了（分别是 v1、v2 和 v3）。在读取这个数据的时候，就可能读取到旧的值。<br>如果我们非要保持这个数据在三个实例上一致，就要涉及到加锁、实例间协商是否完成修改等一系列操作，但这会带来巨额的开销，当然是不太能接受的。</p>
+<h4 id="主库如何把数据同步给从库"><a href="#主库如何把数据同步给从库" class="headerlink" title="主库如何把数据同步给从库"></a>主库如何把数据同步给从库</h4><p>当我们启动多个 <code>Redis</code> 实例的时候，它们相互之间就可以通过 <code>replicaof</code>（Redis 5.0 之前使用 slaveof）命令形成主库和从库的关系，之后会按照三个阶段完成数据的第一次同步。</p>
+<p>数据同步</p>
+<p>第一阶段</p>
+<p>建立连接，协商同步，psync(runId&#x3D;?,offest&#x3D;-1)，此时主库会调用<code>FULLRESYNC</code>进行同步。</p>
+<p>第二阶段</p>
+<p>主库执行 bgsave 命令，生成 RDB 快照文件，接着将文件发给从库。从库接收到 RDB 文件后，会先清空当前数据库，然后加载 RDB 文件。这是因为从库在通过 replicaof 命令开始和主库同步前，可能保存了其他数据。为了避免之前数据的影响，从库需要先把当前数据库清空。可能会有人质疑，主库生成RDB快照文件，不会阻塞主库的读写操作吗？会不会有额外的性能开销？那这些问题我们今天就不展开讨论了，感兴趣的同学可以读下源码。<br>rdbSaveBackground就是用来处理在后台将数据保存到磁盘上的函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">rdbSaveBackground(char *filename, rdbSaveInfo *rsi) &#123;</span><br><span class="line">    pid_t childpid;</span><br><span class="line">​</span><br><span class="line">    if (hasActiveChildProcess()) return C_ERR;</span><br><span class="line">    ...</span><br><span class="line">​</span><br><span class="line">    if ((childpid = redisFork()) == 0) &#123;</span><br><span class="line">        int retval;</span><br><span class="line">​</span><br><span class="line">        /* Child */</span><br><span class="line">        redisSetProcTitle(&quot;redis-rdb-bgsave&quot;);</span><br><span class="line">        retval = rdbSave(filename,rsi);</span><br><span class="line">        if (retval == C_OK) &#123;</span><br><span class="line">            sendChildCOWInfo(CHILD_INFO_TYPE_RDB, &quot;RDB&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        exitFromChild((retval == C_OK) ? 0 : 1);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        /* Parent */</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第三阶段<br><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FtmZht4Ivy2dqgSNs9oBt%2Fuploads%2FQBHyfOm3B3pfyAx4ujjB%2Fimage.png?alt=media&token=6338741b-ed4c-4c2b-9a66-e173727821a9" alt="增量复制"></p>
+<p><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FtmZht4Ivy2dqgSNs9oBt%2Fuploads%2FWsP7zTuYJwtAn02Abnnv%2Fimage.png?alt=media&token=00a36c97-cdfd-4eae-a591-6fc1a833bfed" alt="repl_backlog_buffer"></p>
+<p>最后，也就是第三个阶段，主库会把第二阶段执行过程中新收到的写命令，再发送给从库。具体的操作是，当主库完成 RDB 文件发送后，就会把此时 <code>replication_buffe</code>r 中的修改操作发给从库，从库再重新执行这些操作。这样一来，主从库就实现同步了。<br>主从库如果断开连接了，下次建立连接时会通过<code>repl_backlog_buffer</code>环形缓冲区进行增量复制，psync(runId&#x3D;1,offest&#x3D;100)，offest&#x3D;100用于标记从库在<code>repl_backlog_buffer</code>中的位置。</p>
+<h5 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h5><p>为什么Redis主从模式能保持数据一致？</p>
+<p>采用读写分离，避免加锁、实例间协商是否完成修改等操作，减少不必要的性能损耗；</p>
+<p>主从实例间通过RDB快照进行数据同步，同步期间主库的写操作额外记录一份到<code>replication_buffer</code>中，同步完成时，发送给从库，从库再重新执行这些操作。</p>
+<p>后续的数据同步通过<code>repl_backlog_buffer</code>来标记主从实例环形缓冲区中的位置，从库执行这些操作。</p>
+
+<div id="gitalk-container"></div>
+<script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js"></script><link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"><script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+		<script>
+		var gitalkConfig = {"clientID":"8a830c77ea91f11025e3","clientSecret":"4ef3d4421a644c8a5c7e878d1d9b4a6c62d7a937","repo":"blog","owner":"liburdi","admin":["liburdi"],"distractionFreeMode":false};
+	    gitalkConfig.id = md5(location.pathname);
+		var gitalk = new Gitalk(gitalkConfig);
+	    gitalk.render("gitalk-container");
+	    </script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liburdi.xyz/2023/07/21/%E4%B8%BA%E4%BB%80%E4%B9%88Redis%E4%B8%BB%E4%BB%8E%E6%A8%A1%E5%BC%8F%E8%83%BD%E4%BF%9D%E6%8C%81%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4/" data-id="clkbdlqqh0000tio300a730t5" data-title="为什么Redis主从模式能保持数据一致?" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/" rel="tag">redis</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-nginx反向代理，怎么配置？" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/04/27/nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%EF%BC%8C%E6%80%8E%E4%B9%88%E9%85%8D%E7%BD%AE%EF%BC%9F/" class="article-date">
@@ -301,7 +375,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/goroutine/" rel="tag">goroutine</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/" rel="tag">nginx</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/goroutine/" rel="tag">goroutine</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/" rel="tag">nginx</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a></li></ul>
     </div>
   </div>
 
@@ -311,7 +385,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a></li></ul>
     </div>
   </div>
 
@@ -322,6 +396,10 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2023/07/21/%E4%B8%BA%E4%BB%80%E4%B9%88Redis%E4%B8%BB%E4%BB%8E%E6%A8%A1%E5%BC%8F%E8%83%BD%E4%BF%9D%E6%8C%81%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4/">为什么Redis主从模式能保持数据一致?</a>
+          </li>
         
           <li>
             <a href="/2023/04/27/nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%EF%BC%8C%E6%80%8E%E4%B9%88%E9%85%8D%E7%BD%AE%EF%BC%9F/">nginx反向代理，怎么配置？</a>
