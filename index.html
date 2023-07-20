@@ -107,7 +107,7 @@
 <p><strong>3）主从库之前网络断了怎么办；</strong></p>
 <p>不过既然Redis具有高可用性，说明这些问题都已经有了答案。</p>
 <h4 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h4><h6 id="主从库为什么要采用读写分离的方式"><a href="#主从库为什么要采用读写分离的方式" class="headerlink" title="主从库为什么要采用读写分离的方式"></a>主从库为什么要采用读写分离的方式</h6><p>你可以设想一下，如果不管是主库还是从库，都能接收客户端的写操作，那么，一个直接的问题就是：如果客户端对同一个数据（例如 k1）前后修改了三次，每一次的修改请求都发送到不同的实例上，在不同的实例上执行，那么，这个数据在这三个实例上的副本就不一致了（分别是 v1、v2 和 v3）。在读取这个数据的时候，就可能读取到旧的值。<br>如果我们非要保持这个数据在三个实例上一致，就要涉及到加锁、实例间协商是否完成修改等一系列操作，但这会带来巨额的开销，当然是不太能接受的。</p>
-<h4 id="主库如何把数据同步给从库"><a href="#主库如何把数据同步给从库" class="headerlink" title="主库如何把数据同步给从库"></a>主库如何把数据同步给从库</h4><p>当我们启动多个 <code>Redis</code> 实例的时候，它们相互之间就可以通过 <code>replicaof</code>（Redis 5.0 之前使用 slaveof）命令形成主库和从库的关系，之后会按照三个阶段完成数据的第一次同步。</p>
+<h6 id="主库如何把数据同步给从库"><a href="#主库如何把数据同步给从库" class="headerlink" title="主库如何把数据同步给从库"></a>主库如何把数据同步给从库</h6><p>当我们启动多个 <code>Redis</code> 实例的时候，它们相互之间就可以通过 <code>replicaof</code>（Redis 5.0 之前使用 slaveof）命令形成主库和从库的关系，之后会按照三个阶段完成数据的第一次同步。</p>
 <p>数据同步</p>
 <p>第一阶段</p>
 <p>建立连接，协商同步，psync(runId&#x3D;?,offest&#x3D;-1)，此时主库会调用<code>FULLRESYNC</code>进行同步。</p>
@@ -118,7 +118,7 @@
 <p>第三阶段<br><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FtmZht4Ivy2dqgSNs9oBt%2Fuploads%2FQBHyfOm3B3pfyAx4ujjB%2Fimage.png?alt=media&token=6338741b-ed4c-4c2b-9a66-e173727821a9" alt="增量复制"></p>
 <p><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FtmZht4Ivy2dqgSNs9oBt%2Fuploads%2FWsP7zTuYJwtAn02Abnnv%2Fimage.png?alt=media&token=00a36c97-cdfd-4eae-a591-6fc1a833bfed" alt="repl_backlog_buffer"></p>
 <p>最后，也就是第三个阶段，主库会把第二阶段执行过程中新收到的写命令，再发送给从库。具体的操作是，当主库完成 RDB 文件发送后，就会把此时 <code>replication_buffe</code>r 中的修改操作发给从库，从库再重新执行这些操作。这样一来，主从库就实现同步了。<br>主从库如果断开连接了，下次建立连接时会通过<code>repl_backlog_buffer</code>环形缓冲区进行增量复制，psync(runId&#x3D;1,offest&#x3D;100)，offest&#x3D;100用于标记从库在<code>repl_backlog_buffer</code>中的位置。</p>
-<h5 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h5><p>为什么Redis主从模式能保持数据一致？</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>为什么Redis主从模式能保持数据一致？</p>
 <p>采用读写分离，避免加锁、实例间协商是否完成修改等操作，减少不必要的性能损耗；</p>
 <p>主从实例间通过RDB快照进行数据同步，同步期间主库的写操作额外记录一份到<code>replication_buffer</code>中，同步完成时，发送给从库，从库再重新执行这些操作。</p>
 <p>后续的数据同步通过<code>repl_backlog_buffer</code>来标记主从实例环形缓冲区中的位置，从库执行这些操作。</p>
