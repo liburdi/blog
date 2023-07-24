@@ -107,9 +107,11 @@
 <li><p><code>fork</code> 函数是否会带来额外的性能开销，这些开销我们怎么样才可以避免？</p>
 </li>
 </ul>
-<h5 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h5><p>*通过 <code>fork</code> 生成的父子进程会共享包括内存空间在内的资源；</p>
-<ul>
-<li><code>fork</code>  函数并不会带来明显的性能开销，尤其是对内存进行大量的拷贝，它能通过写时拷贝将拷贝内存这一工作推迟到真正需要的时候。</li>
+<h5 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h5><ul>
+<li><p>通过 <code>fork</code> 生成的父子进程会共享包括内存空间在内的资源；</p>
+</li>
+<li><p><code>fork</code>  函数并不会带来明显的性能开销，尤其是对内存进行大量的拷贝，它能通过写时拷贝将拷贝内存这一工作推迟到真正需要的时候。</p>
+</li>
 </ul>
 <p>Redis 实现后台快照的方式非常巧妙，通过操作系统提供的<code> fork</code> 和<strong>写时拷贝</strong>的特性轻而易举的就实现了这个功能，从这里我们就能看出作者对于操作系统知识的掌握还是非常扎实的，大多人在面对类似的场景时，想到的方法可能就是手动实现类似写时拷贝的特性，然而这不仅增加了工作量，还增加了程序出现问题的可能性。</p>
 <p>到这里，我们简单总结一下 <strong>Redis 为什么在使用 RDB快照时会通过子进程的方式</strong>进行实现：</p>
@@ -120,8 +122,12 @@
 </li>
 </ul>
 <p>上述两个原因中，一个为子进程访问父进程提供了支撑，另一个为减少额外开销做了支持，这两者缺一不可，共同成为了 Redis 使用子进程实现快照持久化的原因。到最后，我们还是来看一些比较开放的相关问题，有兴趣的读者可以仔细思考一下下面的问题：</p>
-<p>Nginx 的主进程会在运行时 <code>fork</code> 一组子进程，这些子进程可以分别处理请求，还有哪些服务会使用这一特性？</p>
-<p>写时拷贝其实是一个比较常见的机制，在 Redis 之外还有哪里会用到它？</p>
+<ul>
+<li><p>Nginx 的主进程会在运行时 <code>fork</code> 一组子进程，这些子进程可以分别处理请求，还有哪些服务会使用这一特性？</p>
+</li>
+<li><p>写时拷贝其实是一个比较常见的机制，在 Redis 之外还有哪里会用到它？</p>
+</li>
+</ul>
 
 <div id="gitalk-container"></div>
 <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js"></script><link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"><script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
@@ -181,7 +187,7 @@
 <p>不过既然Redis具有高可用性，说明这些问题都已经有了答案。</p>
 <h4 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h4><h5 id="主从库为什么要采用读写分离的方式"><a href="#主从库为什么要采用读写分离的方式" class="headerlink" title="主从库为什么要采用读写分离的方式"></a>主从库为什么要采用读写分离的方式</h5><p>你可以设想一下，如果不管是主库还是从库，都能接收客户端的写操作，那么，一个直接的问题就是：如果客户端对同一个数据（例如 k1）前后修改了三次，每一次的修改请求都发送到不同的实例上，在不同的实例上执行，那么，这个数据在这三个实例上的副本就不一致了（分别是 v1、v2 和 v3）。在读取这个数据的时候，就可能读取到旧的值。<br>如果我们非要保持这个数据在三个实例上一致，就要涉及到加锁、实例间协商是否完成修改等一系列操作，但这会带来巨额的开销，当然是不太能接受的。</p>
 <h5 id="主库如何把数据同步给从库"><a href="#主库如何把数据同步给从库" class="headerlink" title="主库如何把数据同步给从库"></a>主库如何把数据同步给从库</h5><p>当我们启动多个 <code>Redis</code> 实例的时候，它们相互之间就可以通过 <code>replicaof</code>（Redis 5.0 之前使用 slaveof）命令形成主库和从库的关系，之后会按照三个阶段完成数据的第一次同步。</p>
-<p>** 数据同步 **<br><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FtmZht4Ivy2dqgSNs9oBt%2Fuploads%2FQBHyfOm3B3pfyAx4ujjB%2Fimage.png?alt=media&token=6338741b-ed4c-4c2b-9a66-e173727821a9" alt="数据同步"></p>
+<p>**数据同步 **<br><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FtmZht4Ivy2dqgSNs9oBt%2Fuploads%2FQBHyfOm3B3pfyAx4ujjB%2Fimage.png?alt=media&token=6338741b-ed4c-4c2b-9a66-e173727821a9" alt="数据同步"></p>
 <p><strong>第一阶段</strong></p>
 <p>建立连接，协商同步，<code>psync(runId=?,offest=-1)</code>，此时主库会调用<code>FULLRESYNC</code>进行同步。</p>
 <p><strong>第二阶段</strong></p>
@@ -192,7 +198,7 @@
 <p><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FtmZht4Ivy2dqgSNs9oBt%2Fuploads%2FWsP7zTuYJwtAn02Abnnv%2Fimage.png?alt=media&token=00a36c97-cdfd-4eae-a591-6fc1a833bfed" alt="repl_backlog_buffer"></p>
 <p>最后，也就是第三个阶段，主库会把第二阶段执行过程中新收到的写命令，再发送给从库。具体的操作是，当主库完成 RDB 文件发送后，就会把此时 <code>replication_buffer</code> 中的修改操作发给从库，从库再重新执行这些操作。这样一来，主从库就实现同步了。</p>
 <p><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FtmZht4Ivy2dqgSNs9oBt%2Fuploads%2F1JJ7zQGDGxAXzlwjvjxz%2Fimage.png?alt=media&token=0a6ad55d-3cd9-44dd-a05c-587ea8f9bac3" alt="重连恢复"><br><strong>主从库如果断开连接了</strong>，下次建立连接时会通过<code>repl_backlog_buffer</code>环形缓冲区进行增量复制，<code>psync(runId=1,offest=100)，offest=100</code>用于标记从库在<code>repl_backlog_buffer</code>中的位置。</p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>** 为什么Redis主从模式能保持数据一致？**</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p><strong>为什么Redis主从模式能保持数据一致？</strong></p>
 <ul>
 <li><p>采用读写分离，避免加锁、实例间协商是否完成修改等操作，减少不必要的性能损耗；</p>
 </li>
