@@ -191,7 +191,8 @@
 
 <p>第三阶段</p>
 <p><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FtmZht4Ivy2dqgSNs9oBt%2Fuploads%2FWsP7zTuYJwtAn02Abnnv%2Fimage.png?alt=media&token=00a36c97-cdfd-4eae-a591-6fc1a833bfed" alt="repl_backlog_buffer"></p>
-<p>最后，也就是第三个阶段，主库会把第二阶段执行过程中新收到的写命令，再发送给从库。具体的操作是，当主库完成 RDB 文件发送后，就会把此时 <code>replication_buffer</code> 中的修改操作发给从库，从库再重新执行这些操作。这样一来，主从库就实现同步了。<br><strong>主从库如果断开连接了</strong>，下次建立连接时会通过<code>repl_backlog_buffer</code>环形缓冲区进行增量复制，<code>psync(runId=1,offest=100)，offest=100</code>用于标记从库在<code>repl_backlog_buffer</code>中的位置。</p>
+<p>最后，也就是第三个阶段，主库会把第二阶段执行过程中新收到的写命令，再发送给从库。具体的操作是，当主库完成 RDB 文件发送后，就会把此时 <code>replication_buffer</code> 中的修改操作发给从库，从库再重新执行这些操作。这样一来，主从库就实现同步了。</p>
+<p><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FtmZht4Ivy2dqgSNs9oBt%2Fuploads%2F1JJ7zQGDGxAXzlwjvjxz%2Fimage.png?alt=media&token=0a6ad55d-3cd9-44dd-a05c-587ea8f9bac3" alt="重连恢复"><br><strong>主从库如果断开连接了</strong>，下次建立连接时会通过<code>repl_backlog_buffer</code>环形缓冲区进行增量复制，<code>psync(runId=1,offest=100)，offest=100</code>用于标记从库在<code>repl_backlog_buffer</code>中的位置。</p>
 <h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>为什么Redis主从模式能保持数据一致？</p>
 <p>采用读写分离，避免加锁、实例间协商是否完成修改等操作，减少不必要的性能损耗；</p>
 <p>主从实例间通过RDB快照进行数据同步，同步期间主库的写操作额外记录一份到<code>replication_buffer</code>中，同步完成时，发送给从库，从库再重新执行这些操作。</p>
